@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 type Workout = {
@@ -20,15 +21,25 @@ type Workout = {
 };
 
 export default function WorkoutDetails() {
+  const params = useParams();
+  const id = params.id;
+ 
+
   const [workout, setWorkout] = useState<Workout | null>(null);
 
   useEffect(() => {
-    fetch("https://api.abcz.workers.dev/api/fitlog/1")
+    if (!id) return;
+
+    fetch(`https://api.abcz.workers.dev/api/fitlog/${id}`)
       .then((res) => res.json())
       .then((data) => {
+        console.log("Workout data:", data);
         setWorkout(data);
+      })
+      .catch((error) => {
+        console.error("Error fetching workout:", error);
       });
-  }, []);
+  }, [id]);
 
   if (!workout) {
     return (
@@ -118,10 +129,71 @@ export default function WorkoutDetails() {
 
           </div>
 
+          {/* Rating */}
           <div className="mt-5 text-lg">
-            ⭐ {workout.rating}
-          </div>
+  ⭐ {workout.rating}
+</div>
 
+<div className="mt-6 flex flex-col gap-3 sm:flex-row">
+  <button
+    onClick={() => {
+      const savedPlan = JSON.parse(
+        localStorage.getItem("fitlog-plan") || "[]"
+      );
+
+      if (savedPlan.length >= 5) {
+        alert("Today's Plan is full. Maximum 5 workouts.");
+        return;
+      }
+
+      const alreadyAdded = savedPlan.some(
+        (item: Workout) => item.id === workout.id
+      );
+
+      if (alreadyAdded) {
+        alert("This workout is already in Today's Plan.");
+        return;
+      }
+
+      localStorage.setItem(
+        "fitlog-plan",
+        JSON.stringify([...savedPlan, workout])
+      );
+
+      alert("Added to Today's Plan!");
+    }}
+    className="rounded-full bg-[#ccff00] px-6 py-3 font-bold text-black transition hover:bg-lime-300"
+  >
+    Add to Today's Plan
+  </button>
+
+  <button
+    onClick={() => {
+      const savedWorkouts = JSON.parse(
+        localStorage.getItem("fitlog-saved") || "[]"
+      );
+
+      const alreadySaved = savedWorkouts.some(
+        (item: Workout) => item.id === workout.id
+      );
+
+      if (alreadySaved) {
+        alert("This workout is already saved.");
+        return;
+      }
+
+      localStorage.setItem(
+        "fitlog-saved",
+        JSON.stringify([...savedWorkouts, workout])
+      );
+
+      alert("Saved for later!");
+    }}
+    className="rounded-full border border-white/20 px-6 py-3 font-bold text-white transition hover:border-[#ccff00] hover:text-[#ccff00]"
+  >
+    Save for Later
+  </button>
+</div>
         </div>
       </div>
     </main>
