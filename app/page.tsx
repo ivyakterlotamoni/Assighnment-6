@@ -28,13 +28,13 @@ export default function Home() {
   const [savedCount, setSavedCount] = useState(0);
 
   useEffect(() => {
-  const plan = JSON.parse(localStorage.getItem("fitlog-plan") || "[]");
-  const saved = JSON.parse(localStorage.getItem("fitlog-saved") || "[]");
+    const plan = JSON.parse(localStorage.getItem("fitlog-plan") || "[]");
+    const saved = JSON.parse(localStorage.getItem("fitlog-saved") || "[]");
 
-  setPlanCount(plan.length);
-  setSavedCount(saved.length);
+    setPlanCount(plan.length);
+    setSavedCount(saved.length);
 
-  fetch("https://api.abcz.workers.dev/api/fitlog")
+    fetch("https://api.abcz.workers.dev/api/fitlog")
       .then((res) => res.json())
       .then((data) => {
         setWorkouts(data);
@@ -45,6 +45,18 @@ export default function Home() {
         setLoading(false);
       });
   }, []);
+
+  const sortedWorkouts = [...workouts].sort((a, b) => {
+    if (sortBy === "calories") {
+      return b.caloriesBurned - a.caloriesBurned;
+    }
+
+    if (sortBy === "rating") {
+      return b.rating - a.rating;
+    }
+
+    return a.duration - b.duration;
+  });
 
   return (
     <main className="min-h-screen bg-[#0b0d0c] text-white">
@@ -159,6 +171,23 @@ export default function Home() {
           Twelve lifts covering every major muscle group.
         </p>
 
+        {/* ================= SORT ================= */}
+        <div className="mt-5 flex items-center gap-3">
+          <label className="text-sm text-white/50">
+            Sort by:
+          </label>
+
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="rounded-lg border border-white/20 bg-[#151817] px-4 py-2 text-sm text-white outline-none"
+          >
+            <option value="duration">Duration</option>
+            <option value="calories">Calories</option>
+            <option value="rating">Rating</option>
+          </select>
+        </div>
+
         {/* Loading */}
         {loading && (
           <div className="mt-10 py-16 text-center">
@@ -172,12 +201,12 @@ export default function Home() {
         {!loading && (
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
 
-            {workouts.map((workout) => (
+            {sortedWorkouts.map((workout) => (
               <Link
-  href={`/workout/${workout.id}`}
-  className="block overflow-hidden rounded-2xl border border-white/10 bg-[#151817] transition hover:-translate-y-1 hover:border-[#ccff00]/50"
->
-              
+                key={workout.id}
+                href={`/workout/${workout.id}`}
+                className="block overflow-hidden rounded-2xl border border-white/10 bg-[#151817] transition hover:-translate-y-1 hover:border-[#ccff00]/50"
+              >
 
                 {/* Image */}
                 <div className="relative h-56 overflow-hidden bg-[#202322]">
