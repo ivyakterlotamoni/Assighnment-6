@@ -23,9 +23,18 @@ type Workout = {
 export default function Home() {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sortBy, setSortBy] = useState("duration");
+  const [planCount, setPlanCount] = useState(0);
+  const [savedCount, setSavedCount] = useState(0);
 
   useEffect(() => {
-    fetch("https://api.abcz.workers.dev/api/fitlog")
+  const plan = JSON.parse(localStorage.getItem("fitlog-plan") || "[]");
+  const saved = JSON.parse(localStorage.getItem("fitlog-saved") || "[]");
+
+  setPlanCount(plan.length);
+  setSavedCount(saved.length);
+
+  fetch("https://api.abcz.workers.dev/api/fitlog")
       .then((res) => res.json())
       .then((data) => {
         setWorkouts(data);
@@ -75,14 +84,14 @@ export default function Home() {
               href="/my-plan"
               className="rounded-full bg-[#ccff00] px-3 py-2 text-xs font-bold text-black"
             >
-              Plan 0
+              Plan {planCount}
             </a>
 
             <a
               href="/my-plan"
               className="rounded-full border border-white/30 px-3 py-2 text-xs font-bold text-white"
             >
-              Saved 0
+              Saved {savedCount}
             </a>
           </div>
         </div>
