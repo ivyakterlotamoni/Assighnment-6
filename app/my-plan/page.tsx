@@ -46,10 +46,9 @@ export default function MyPlan() {
     localStorage.setItem("fitlog-saved", JSON.stringify(updated));
   };
 
-  const markAsDone = (id: number) => {
-    alert("Workout marked as done!");
-    removeFromPlan(id);
-  };
+ const markAsDone = (id: number) => {
+  removeFromPlan(id);
+};
 
   const workouts = activeTab === "plan" ? plan : saved;
 

@@ -34,16 +34,21 @@ export default function Home() {
     setPlanCount(plan.length);
     setSavedCount(saved.length);
 
-    fetch("https://api.abcz.workers.dev/api/fitlog")
-      .then((res) => res.json())
-      .then((data) => {
-        setWorkouts(data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Failed to load workouts:", error);
-        setLoading(false);
-      });
+   fetch("https://api.api-store.workers.dev/api/fitlog")
+  .then((res) => {
+    if (!res.ok) {
+      throw new Error(`API Error: ${res.status}`);
+    }
+    return res.json();
+  })
+  .then((data) => {
+    setWorkouts(data);
+    setLoading(false);
+  })
+  .catch((error) => {
+    console.error("Failed to load workouts:", error);
+    setLoading(false);
+  });
   }, []);
 
   const sortedWorkouts = [...workouts].sort((a, b) => {
@@ -73,6 +78,10 @@ export default function Home() {
               height={40}
               className="h-10 w-auto object-contain"
             />
+            <span className="text-lg font-black tracking-tight text-white">
+    FITLOG
+  </span>
+
           </a>
 
           <div className="hidden items-center gap-8 md:flex">
