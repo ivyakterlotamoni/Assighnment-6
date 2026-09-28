@@ -79,8 +79,8 @@ export default function Home() {
               className="h-10 w-auto object-contain"
             />
             <span className="text-lg font-black tracking-tight text-white">
-    FITLOG
-  </span>
+             FITLOG
+               </span>
 
           </a>
 

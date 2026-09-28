@@ -33,27 +33,46 @@ export default function WorkoutDetails() {
   useEffect(() => {
     if (!id) return;
 
-    const plan = JSON.parse(localStorage.getItem("fitlog-plan") || "[]");
-    const saved = JSON.parse(localStorage.getItem("fitlog-saved") || "[]");
+    const plan = JSON.parse(
+      localStorage.getItem("fitlog-plan") || "[]"
+    );
+
+    const saved = JSON.parse(
+      localStorage.getItem("fitlog-saved") || "[]"
+    );
 
     setPlanCount(plan.length);
     setSavedCount(saved.length);
 
     fetch(`https://api.api-store.workers.dev/api/fitlog/${id}`)
-      .then((res) => res.json())
-      .then((data) => setWorkout(data))
-      .catch((error) => console.error(error));
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Failed to load workout");
+        }
+        return res.json();
+      })
+      .then((data) => {
+        setWorkout(data);
+      })
+      .catch((error) => {
+        console.error("Workout fetch error:", error);
+      });
   }, [id]);
 
   const showToast = (message: string) => {
     setToast(message);
-    setTimeout(() => setToast(""), 2500);
+
+    setTimeout(() => {
+      setToast("");
+    }, 2500);
   };
 
   const addToPlan = () => {
     if (!workout) return;
 
-    const plan = JSON.parse(localStorage.getItem("fitlog-plan") || "[]");
+    const plan = JSON.parse(
+      localStorage.getItem("fitlog-plan") || "[]"
+    );
 
     if (plan.length >= 5) {
       showToast("Today's plan is full");
@@ -65,10 +84,15 @@ export default function WorkoutDetails() {
       return;
     }
 
-    const updated = [...plan, workout];
+    const updatedPlan = [...plan, workout];
 
-    localStorage.setItem("fitlog-plan", JSON.stringify(updated));
-    setPlanCount(updated.length);
+    localStorage.setItem(
+      "fitlog-plan",
+      JSON.stringify(updatedPlan)
+    );
+
+    setPlanCount(updatedPlan.length);
+
     showToast("Added to today's plan");
   };
 
@@ -84,10 +108,15 @@ export default function WorkoutDetails() {
       return;
     }
 
-    const updated = [...saved, workout];
+    const updatedSaved = [...saved, workout];
 
-    localStorage.setItem("fitlog-saved", JSON.stringify(updated));
-    setSavedCount(updated.length);
+    localStorage.setItem(
+      "fitlog-saved",
+      JSON.stringify(updatedSaved)
+    );
+
+    setSavedCount(updatedSaved.length);
+
     showToast("Saved for later");
   };
 
@@ -95,7 +124,7 @@ export default function WorkoutDetails() {
     return (
       <main className="min-h-screen bg-[#0b0d0c] text-white">
         <div className="flex min-h-screen items-center justify-center">
-          <p className="animate-pulse text-white/50">
+          <p className="animate-pulse text-sm text-white/50">
             Loading workout…
           </p>
         </div>
@@ -106,49 +135,58 @@ export default function WorkoutDetails() {
   return (
     <main className="min-h-screen bg-[#0b0d0c] text-white">
 
+      {/* TOAST */}
       {toast && (
-       <div className="fixed right-5 top-5 z-50 flex items-center gap-2 rounded-lg border border-white/10 bg-[#171a1b] px-5 py-3 text-sm font-semibold text-white shadow-xl">
-  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#ccff00] text-xs font-black text-black">
-    ✓
-  </span>
-  {toast}
-</div>
+        <div className="fixed right-5 top-5 z-[9999] flex items-center gap-3 rounded-xl border border-[#ccff00]/30 bg-[#171a17] px-5 py-3 text-sm font-bold text-white shadow-2xl">
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#ccff00] font-black text-black">
+            ✓
+          </span>
+
+          <span>{toast}</span>
+        </div>
       )}
 
       {/* NAVBAR */}
       <nav className="border-b border-white/10">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-5">
 
+          {/* LOGO */}
           <Link href="/" className="flex items-center gap-2">
-  <Image
-    src="/logo-image.png"
-    alt="FitLog"
-    width={28}
-    height={28}
-    className="h-7 w-7 object-contain"
-  />
-  <span className="text-lg font-black tracking-tight text-white">
-    FITLOG
-  </span>
-</Link>
+            <Image
+              src="/logo-image.png"
+              alt="FitLog"
+              width={28}
+              height={28}
+              className="h-7 w-7 object-contain"
+            />
 
-          <div className="hidden items-center gap-7 md:flex">
+            <span className="text-lg font-black tracking-tight text-white">
+              FITLOG
+            </span>
+          </Link>
+
+          {/* NAV LINKS */}
+          <div className="hidden items-center gap-8 md:flex">
+
             <Link
               href="/#library"
-              className="text-sm font-semibold text-white/70 hover:text-white"
+              className="text-sm font-semibold text-white/70 transition hover:text-white"
             >
               Workouts
             </Link>
 
             <Link
               href="/my-plan"
-              className="text-sm font-semibold text-white/70 hover:text-white"
+              className="text-sm font-semibold text-white/70 transition hover:text-white"
             >
               My Plan
             </Link>
+
           </div>
 
-          <div className="flex gap-2">
+          {/* BADGES */}
+          <div className="flex items-center gap-2">
+
             <Link
               href="/my-plan"
               className="rounded-full bg-[#ccff00] px-3 py-1.5 text-xs font-bold text-black"
@@ -158,30 +196,35 @@ export default function WorkoutDetails() {
 
             <Link
               href="/my-plan"
-              className="rounded-full border border-white/30 px-3 py-1.5 text-xs font-bold"
+              className="rounded-full border border-white/30 px-3 py-1.5 text-xs font-bold text-white"
             >
               Saved {savedCount}
             </Link>
+
           </div>
+
         </div>
       </nav>
 
       {/* DETAILS */}
-      <section className="mx-auto max-w-6xl px-5 py-8">
+      <section className="mx-auto max-w-6xl px-4 py-8 sm:px-5 sm:py-10">
 
-        <div className="grid gap-7 lg:grid-cols-[1fr_1fr]">
+        <div className="grid gap-8 lg:grid-cols-[1fr_1fr]">
 
           {/* LEFT IMAGE */}
+               <div className="overflow-hidden rounded-2xl">
+  <Image
+    src={workout.image}
+    alt={workout.name}
+    width={800}
+    height={800}
+    className="w-full object-cover lg:h-full"
+    unoptimized
+  />
+</div>
+        
+
           
-        <div className="relative h-[360px] overflow-hidden rounded-xl bg-[#151817] lg:h-full lg:min-h-[520px]">
-      <Image
-       src={workout.image}
-       alt={workout.name}
-      fill
-       className="object-cover"
-      unoptimized
-      />
-      </div>
 
           {/* RIGHT SIDE */}
           <div>
@@ -190,7 +233,7 @@ export default function WorkoutDetails() {
               WORKOUT DETAILS
             </p>
 
-            <h1 className="mt-2 text-3xl font-black uppercase">
+            <h1 className="mt-2 text-3xl font-black uppercase leading-tight sm:text-4xl">
               {workout.name}
             </h1>
 
@@ -200,6 +243,7 @@ export default function WorkoutDetails() {
 
             {/* TAGS */}
             <div className="mt-4 flex flex-wrap gap-2">
+
               {workout.muscleGroups.map((muscle) => (
                 <span
                   key={muscle}
@@ -208,6 +252,7 @@ export default function WorkoutDetails() {
                   {muscle}
                 </span>
               ))}
+
             </div>
 
             {/* SPECS */}
@@ -217,6 +262,7 @@ export default function WorkoutDetails() {
                 <span className="text-[10px] font-bold uppercase text-white/40">
                   Equipment
                 </span>
+
                 <span className="text-sm font-semibold">
                   {workout.equipment}
                 </span>
@@ -226,6 +272,7 @@ export default function WorkoutDetails() {
                 <span className="text-[10px] font-bold uppercase text-white/40">
                   Difficulty
                 </span>
+
                 <span className="text-sm font-semibold">
                   {workout.difficulty}
                 </span>
@@ -235,6 +282,7 @@ export default function WorkoutDetails() {
                 <span className="text-[10px] font-bold uppercase text-white/40">
                   Sets
                 </span>
+
                 <span className="text-sm font-semibold">
                   {workout.sets}
                 </span>
@@ -244,6 +292,7 @@ export default function WorkoutDetails() {
                 <span className="text-[10px] font-bold uppercase text-white/40">
                   Reps
                 </span>
+
                 <span className="text-sm font-semibold">
                   {workout.reps}
                 </span>
@@ -253,6 +302,7 @@ export default function WorkoutDetails() {
                 <span className="text-[10px] font-bold uppercase text-white/40">
                   Duration
                 </span>
+
                 <span className="text-sm font-semibold">
                   {workout.duration} min
                 </span>
@@ -262,6 +312,7 @@ export default function WorkoutDetails() {
                 <span className="text-[10px] font-bold uppercase text-white/40">
                   Calories
                 </span>
+
                 <span className="text-sm font-semibold">
                   {workout.caloriesBurned} kcal
                 </span>
@@ -271,6 +322,7 @@ export default function WorkoutDetails() {
                 <span className="text-[10px] font-bold uppercase text-white/40">
                   Rating
                 </span>
+
                 <span className="text-sm font-semibold">
                   ★ {workout.rating}
                 </span>
@@ -278,58 +330,114 @@ export default function WorkoutDetails() {
 
             </div>
 
-                 
-          
-          {/* INSTRUCTIONS */}
-<div className="mt-6">
-  <h2 className="text-xl font-black uppercase">
-    INSTRUCTIONS
-  </h2>
+            {/* INSTRUCTIONS */}
+            <div className="mt-6">
 
-  <ol className="mt-3 space-y-2">
-    {workout.instructions.map((instruction, index) => (
-      <li key={index} className="text-sm leading-6 text-white/65">
-        <span className="mr-2 font-bold text-[#ccff00]">
-          {index + 1}.
-        </span>
-        {instruction}
-      </li>
-    ))}
-  </ol>
-</div>
+              <h2 className="text-xs font-bold tracking-[0.18em] text-white/40">
+                INSTRUCTIONS
+              </h2>
 
-{/* BUTTONS */}
-<div className="mt-6 flex flex-wrap gap-3">
-  <button
-    onClick={addToPlan}
-    className="rounded-full bg-[#ccff00] px-6 py-3 text-sm font-black text-black"
-  >
-    Add to today's plan
-  </button>
+              <ol className="mt-3 space-y-2">
 
-  <button
-    onClick={saveForLater}
-    className="rounded-full border border-white/30 px-6 py-3 text-sm font-bold text-white"
-  >
-    Save for later
-  </button>
-</div>
+                {workout.instructions.map((instruction, index) => (
+                  <li
+                    key={index}
+                    className="flex gap-3 text-sm leading-6 text-white/60"
+                  >
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-bold text-white">
+                      {index + 1}
+                    </span>
+
+                    <span>{instruction}</span>
+                  </li>
+                ))}
+
+              </ol>
+
+            </div>
+
+            {/* BUTTONS */}
+            <div className="mt-7 flex flex-wrap items-center gap-2">
+
+              {/* ADD TO PLAN */}
+              <button
+                type="button"
+                onClick={addToPlan}
+                className="inline-flex items-center gap-2 rounded-full bg-[#ccff00] px-4 py-2.5 text-xs font-bold text-black transition hover:opacity-90"
+              >
+
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect
+                    x="4"
+                    y="4"
+                    width="16"
+                    height="16"
+                    rx="2"
+                  />
+
+                  <path d="M9 2h6v4H9z" />
+                  <path d="M12 10v6" />
+                  <path d="M9 13h6" />
+                </svg>
+
+                Add to today's plan
+
+              </button>
+
+              {/* SAVE FOR LATER */}
+              <button
+                type="button"
+                onClick={saveForLater}
+                className="inline-flex items-center gap-2 rounded-full border border-white/40 px-4 py-2.5 text-xs font-semibold text-white transition hover:border-white"
+              >
+
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z" />
+                </svg>
+
+                Save for later
+
+              </button>
+
             </div>
 
           </div>
-        
+
+        </div>
+
       </section>
 
       {/* FOOTER */}
       <footer className="mt-6 border-t border-white/10 px-5 py-6">
+
         <div className="mx-auto max-w-6xl">
+
           <p className="text-xs text-white/40">
             © 2026 FitLog — Workout Library. Train hard, log honest.
           </p>
+
         </div>
+
       </footer>
 
     </main>
   );
 }
-
